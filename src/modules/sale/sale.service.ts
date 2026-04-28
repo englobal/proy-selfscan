@@ -9,6 +9,7 @@ type SaleContext = {
   customer?: { rut: string; name: string };
   items: CartItem[];
   createdAt: string;
+  status?: 'open' | 'paid' | 'closed' | 'cancelled';
 };
 
 const PRODUCTS = [
@@ -29,6 +30,7 @@ export class SaleService {
       id: contextId,
       items: [],
       createdAt: new Date().toISOString(),
+      status: 'open',
     });
     return { contextId };
   }
@@ -53,7 +55,8 @@ export class SaleService {
 
   addItem(dto: AddItemDto) {
     const ctx = this.getContext(dto.contextId);
-    const product = PRODUCTS.find((p) => p.id === dto.productId);
+    const requestedId = dto.productId ?? dto.articleId;
+    const product = PRODUCTS.find((p) => p.id === requestedId);
     if (!product) throw new NotFoundException('Product not found');
 
     const existing = ctx.items.find((i) => i.id === product.id);
@@ -68,8 +71,22 @@ export class SaleService {
 
   setCustomer(dto: SetCustomerDto) {
     const ctx = this.getContext(dto.contextId);
-    ctx.customer = { rut: dto.rut, name: dto.name };
+    ctx.customer = { rut: dto.rut, name: dto.name || 'Cliente' };
     return ctx;
+  }
+
+  clearItem(dto: AddItemDto) {
+    const ctx = this.getContext(dto.contextId);
+    const requestedId = dto.productId ?? dto.articleId;
+    const existing = ctx.items.find((i) => i.id === requestedId);
+    if (!existing) {
+      return this.summary(ctx.id);
+    }
+
+    const qty = Number(dto.quantity || 1);
+    existing.quantity = Math.max(0, existing.quantity - qty);
+    ctx.items = ctx.items.filter((i) => i.quantity > 0);
+    return this.summary(ctx.id);
   }
 
   createPayment(dto: CreatePaymentDto) {
@@ -88,6 +105,73 @@ export class SaleService {
     };
   }
 
+  totalize(contextId: string) {
+    return this.summary(contextId);
+  }
+
+  paymentMethods(contextId: string) {
+    this.getContext(contextId);
+    return {
+      contextId,
+      methods: [
+        { id: 'cash', name: 'Efectivo' },
+        { id: 'debit', name: 'Debito' },
+        { id: 'credit', name: 'Credito' },
+      ],
+    };
+  }
+
+  pay(contextId: string) {
+    const ctx = this.getContext(contextId);
+    const total = ctx.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    ctx.status = 'paid';
+    return {
+      contextId,
+      total,
+      approved: true,
+      receiptId: `R-${Date.now()}`,
+    };
+  }
+
+  close(contextId: string) {
+    const ctx = this.getContext(contextId);
+    ctx.status = 'closed';
+    return {
+      contextId,
+      closed: true,
+    };
+  }
+
+  cancel(contextId?: string) {
+    if (!contextId) {
+      return { cancelled: false, reason: 'contextId required' };
+    }
+    const ctx = this.getContext(contextId);
+    ctx.status = 'cancelled';
+    ctx.items = [];
+    return { contextId, cancelled: true };
+  }
+
+  evaluate(payload: Record<string, unknown>) {
+    const quantity = Number(payload.quantity ?? 1);
+    const product = (payload.product as Record<string, unknown>) || {};
+    const customer = payload.customer;
+    const unitPrice = Number(product.price ?? 0);
+    const subtotal = unitPrice * quantity;
+    const hasCustomer = Boolean(customer);
+    const discountRate = hasCustomer ? 0.1 : 0.05;
+    const discount = Math.round(subtotal * discountRate);
+
+    return {
+      quantity,
+      subtotal,
+      discount,
+      total: subtotal - discount,
+      hasCustomer,
+      rulesApplied: [hasCustomer ? 'CUSTOMER_10' : 'NO_CUSTOMER_5'],
+    };
+  }
+
   summary(contextId: string) {
     const ctx = this.getContext(contextId);
     const total = ctx.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -96,6 +180,7 @@ export class SaleService {
       customer: ctx.customer,
       items: ctx.items,
       total,
+      status: ctx.status,
     };
   }
 

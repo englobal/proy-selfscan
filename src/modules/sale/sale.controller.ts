@@ -28,6 +28,16 @@ export class SaleController {
     return this.saleService.addItem(dto);
   }
 
+  @Post('items')
+  addItemsCompat(@Body() dto: AddItemDto) {
+    return this.saleService.addItem(dto);
+  }
+
+  @Post('items/clear')
+  clearItemsCompat(@Body() dto: AddItemDto) {
+    return this.saleService.clearItem(dto);
+  }
+
   @Post('customer')
   setCustomer(@Body() dto: SetCustomerDto) {
     return this.saleService.setCustomer(dto);
@@ -36,6 +46,36 @@ export class SaleController {
   @Post('payment')
   createPayment(@Body() dto: CreatePaymentDto) {
     return this.saleService.createPayment(dto);
+  }
+
+  @Get('payment-methods/:contextId')
+  paymentMethods(@Param('contextId') contextId: string) {
+    return this.saleService.paymentMethods(contextId);
+  }
+
+  @Post('pay/:contextId')
+  pay(@Param('contextId') contextId: string) {
+    return this.saleService.pay(contextId);
+  }
+
+  @Post('totalize/:contextId')
+  totalize(@Param('contextId') contextId: string) {
+    return this.saleService.totalize(contextId);
+  }
+
+  @Post('close/:contextId')
+  close(@Param('contextId') contextId: string) {
+    return this.saleService.close(contextId);
+  }
+
+  @Post('cancel/:contextId?')
+  cancel(@Param('contextId') contextId?: string) {
+    return this.saleService.cancel(contextId);
+  }
+
+  @Post('products/evaluate')
+  evaluate(@Body() payload: Record<string, unknown>) {
+    return this.saleService.evaluate(payload);
   }
 
   @Get('summary/:contextId')
