@@ -1,0 +1,24 @@
+{
+  "name": "proy-selfscan-mobile",
+  "version": "0.0.1",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "mobile:web": "expo start --web",
+    "mobile:web:lan": "expo start --web --host lan --port 8082 --clear",
+    "mobile:web:export": "expo export --platform web --output-dir dist",
+    "vercel-build": "npm run mobile:web:export"
+  },
+  "dependencies": {
+    "expo": "^55.0.17",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.5",
+    "react-native": "^0.83.6",
+    "react-native-web": "^0.21.0",
+    "react-native-webview": "13.16.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.10",
+    "babel-preset-expo": "~55.0.8"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "proy-selfscan-backend",
+  "version": "0.0.1",
+  "private": true,
+  "description": "BFF SelfScan",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch --tsc --path tsconfig.build.json",
+    "start:dev:lan": "nest start --watch --tsc --path tsconfig.build.json",
+    "start:prod": "node dist/main",
+    "web:install": "npm --prefix mobile install",
+    "web:start": "npm --prefix mobile run mobile:web -- --clear",
+    "web:start:lan": "npm --prefix mobile run mobile:web:lan"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.19",
+    "@nestjs/config": "4.0.4",
+    "@nestjs/core": "11.1.19",
+    "@nestjs/platform-express": "11.1.19",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "11.0.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "22.15.3",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3"
+  }
+}
