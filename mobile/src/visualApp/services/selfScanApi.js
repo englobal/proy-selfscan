@@ -3,6 +3,11 @@ const getBaseUrl = () => {
     return process.env.EXPO_PUBLIC_API_BASE_URL;
   }
 
+  // Stable production fallback used by the deployed web app.
+  if (typeof window !== 'undefined' && window.location?.hostname?.includes('vercel.app')) {
+    return 'https://selfscan-backend.vercel.app';
+  }
+
   if (typeof window !== 'undefined' && window.location?.hostname) {
     const protocol = window.location.protocol || 'https:';
     return `${protocol}//${window.location.hostname}:3000`;
